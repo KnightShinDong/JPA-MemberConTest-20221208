@@ -2,6 +2,13 @@ package com.sdhcompany.home.service;
 
 
 
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberService implements UserDetailsService {
 
 	private final MemberRepository memberRepository;
 	
@@ -34,5 +41,23 @@ public class MemberService {
 		 
 		return memberRepository.save(member); //member1
 		
+	}
+
+
+
+	@Override
+	public UserDetails loadUserByUsername(String mid) throws UsernameNotFoundException {
+		
+		Member member = memberRepository.findByMid(mid);
+		
+		if(member == null) {
+			throw new UsernameNotFoundException(mid);
+		}
+		return User.builder()
+				.username(member.getMid())
+				.password(member.getMpw())
+				.roles(member.getRole().toString())
+				.build()
+				;
 	}
 }
